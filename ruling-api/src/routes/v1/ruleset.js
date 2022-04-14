@@ -1,8 +1,9 @@
 const express = require('express');
+const ruleSetController = require('../../controllers/ruleset')
 
 const router = express.Router();
 
-// Ignore Authentication and Authorization for now
+// Ignore Authentication and Authorization
 
 router.get('/', (req, res, next) => {
     res.status(200).json('message')
@@ -13,9 +14,7 @@ router.get('/:id', (req, res, next) => {
     next();
 })
 
-router.post('/', (req, res, next) => {
-    next();
-})
+router.post('/', ruleSetController.createRuleSet)
 
 router.put('/:id', (req, res, next) => {
     next();

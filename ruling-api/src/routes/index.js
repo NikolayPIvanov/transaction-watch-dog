@@ -1,8 +1,8 @@
 const express = require('express');
-const rulingRoutesv1 = require('./v1/ruling')
+const ruleSetRoutes = require('./v1/ruleset')
 
 const router = express.Router();
 
-router.use('/v1/rules', rulingRoutesv1);
+router.use('/v1/rules', ruleSetRoutes);
 
 module.exports = router;
