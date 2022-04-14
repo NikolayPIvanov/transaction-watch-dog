@@ -1,0 +1,21 @@
+{
+  "name": "ruling-api",
+  "version": "1.0.0",
+  "description": "Ruling API that manipulates configurations for filtering Ethereum Blockchain transactions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/index.js"
+  },
+  "author": "Nikolay Ivanov",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "express-winston": "^4.2.0",
+    "mongoose": "^6.2.11",
+    "nodemon": "^2.0.15",
+    "winston": "^3.7.2"
+  }
+}
