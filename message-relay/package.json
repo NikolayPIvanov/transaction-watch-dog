@@ -1,0 +1,21 @@
+{
+  "name": "message-relay",
+  "version": "1.0.0",
+  "description": "Message Relay sends the events to the service bus to complete the outbox pattern",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/index.js"
+  },
+  "author": "Nikolay Ivanov",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "cron": "^1.8.2",
+    "dotenv": "^16.0.0",
+    "mongoose": "^6.3.0",
+    "node-cron": "^3.0.0",
+    "nodemon": "^2.0.15",
+    "rascal": "^14.4.0"
+  }
+}
