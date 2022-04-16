@@ -47,7 +47,6 @@ class TransactionListener {
                 const tx = await this.web3.eth.getTransaction(txHash);
                 if (!tx) return;
 
-                debugger;
                 const ruleId = await filterCb(ruleSet, tx)
                 if (!ruleId) return;
 

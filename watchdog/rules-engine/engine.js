@@ -2,7 +2,6 @@ const web3 = require('web3')
 
 const build = function (rules, tx) {
     const matchingRules = []
-    console.log(`Got: ${rules}`)
     matchingRules.push(fromToRule(rules, tx))
     // TODO: Refactor
     matchingRules.push(valueRule(rules, tx, 'lowerValueThreshold', 'upperValueThreshold'))
@@ -37,7 +36,7 @@ const statusRule = (rules, tx) => {
 
 const inputRule = (rules, tx) => {
     const inputRules = rules.filter(r => r.input !== undefined);
-    return inputRules.find(rule => rule.input === web3.toAscii(tx.input))
+    return inputRules.find(rule => web3.toAscii(tx.input).contains(rule.input))
 }
 
 const thresholdFilter = (lower, upper, value) => {
