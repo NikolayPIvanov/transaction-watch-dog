@@ -1,17 +1,20 @@
-const winston = require('winston');
+const winston = require('winston')
+
+const options = {
+    console: {
+        level: 'debug',
+        handleExceptions: true,
+        json: false,
+        colorize: true
+    }
+}
 
 const logger = winston.createLogger({
-    level: 'info',
+    levels: winston.config.npm.levels,
     transports: [
-        new winston.transports.Console()
+        new winston.transports.Console(options.console),
     ],
-    format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json()
-    ),
-    meta: false,
-    colorize: false,
-    ignoreRoute: function (req, res) { return false; }
-});
+    exitOnError: false
+})
 
-module.exports = logger;
+module.exports = logger

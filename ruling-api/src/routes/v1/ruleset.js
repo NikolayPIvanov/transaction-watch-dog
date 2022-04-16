@@ -1,27 +1,14 @@
 const express = require('express');
-const ruleSetController = require('../../controllers/ruleset')
+const validate = require('../../middlewares/validate')
+
+const { ruleSetHandlers, ruleSetValidators } = require('../../features/ruleset')
 
 const router = express.Router();
 
-// Ignore Authentication and Authorization
-
-router.get('/', (req, res, next) => {
-    res.status(200).json('message')
-    next();
-})
-
-router.get('/:id', (req, res, next) => {
-    next();
-})
-
-router.post('/', ruleSetController.createRuleSet)
-
-router.put('/:id', (req, res, next) => {
-    next();
-})
-
-router.delete('/:id', (req, res, next) => {
-    next();
-})
+router.get('/', ruleSetHandlers.getRuleSets)
+router.get('/:id', validate(ruleSetValidators.getRuleSetSchema), ruleSetHandlers.getRuleSet)
+router.post('/', validate(ruleSetValidators.createRuleSetSchema), ruleSetHandlers.createRuleSet)
+router.put('/:id', validate(ruleSetValidators.updateRuleSetSchema), ruleSetHandlers.updateRuleSet)
+router.delete('/:id', validate(ruleSetValidators.deleteRuleSetSchema), ruleSetHandlers.deleteRuleSet)
 
 module.exports = router;
