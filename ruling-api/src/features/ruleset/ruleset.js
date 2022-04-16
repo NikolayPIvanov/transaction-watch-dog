@@ -1,7 +1,7 @@
 const RuleSet = require('../../models/ruleset')
 const Message = require('../../models/message')
 const ApiError = require('../../utils/api-error')
-const messageAction = require('../config/message-actions')
+const messageAction = require('../../utils/message-actions')
 
 const sendMessage = async (action, ruleSet) => {
     const messageData = { command: action, body: ruleSet };

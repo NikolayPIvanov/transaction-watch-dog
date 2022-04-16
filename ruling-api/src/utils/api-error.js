@@ -1,4 +1,4 @@
-const httpStatusCodes = require('./httpStatusCodes')
+const httpStatusCodes = require('../utils/httpStatusCodes')
 const BaseError = require('./baseError')
 
 class ApiError extends BaseError {

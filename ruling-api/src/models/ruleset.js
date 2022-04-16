@@ -1,4 +1,4 @@
 const mongoose = require('mongoose');
-const ruleSetSchema = require('../../../shared/models/ruleset-schema')
+const { ruleSetSchema: schema } = require('../../../shared/models')
 
-module.exports = mongoose.model('RuleSet', ruleSetSchema);
+module.exports = mongoose.model('RuleSet', schema.ruleSetSchema);

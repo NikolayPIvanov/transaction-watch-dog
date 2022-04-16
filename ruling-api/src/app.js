@@ -3,10 +3,9 @@ const mongoose = require('mongoose');
 const cors = require('cors')
 const helmet = require("helmet");
 
-const httpLogger = require('./log/httpLogger')
+const { httpLogger, logger } = require('./log')
 const routes = require('./routes')
-const logger = require('./log/logger')
-const config = require('./config/config')
+const { serverConfig } = require('./config')
 
 const app = express();
 
@@ -23,9 +22,9 @@ app.use(httpLogger)
 app.use('/api', routes)
 
 main = async () => {
-    await mongoose.connect(config.mongoUri);
-    server = app.listen(config.port, () => {
-        logger.info(`Listening to port ${config.port}`);
+    await mongoose.connect(serverConfig.mongoUri);
+    server = app.listen(serverConfig.port, () => {
+        logger.info(`Listening to port ${serverConfig.port}`);
     });
 }
 
