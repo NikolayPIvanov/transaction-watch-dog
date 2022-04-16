@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors')
 const helmet = require("helmet");
+const compression = require('compression');
 
 const { httpLogger, logger } = require('./log')
 const routes = require('./routes')
@@ -10,6 +11,8 @@ const { serverConfig } = require('./config')
 const app = express();
 
 app.use(cors()); // Enable All CORS
+
+app.use(compression())
 
 app.use(helmet()); // Adding Security Headers
 
