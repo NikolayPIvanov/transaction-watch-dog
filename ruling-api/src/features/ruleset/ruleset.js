@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const RuleSet = require('./ruleset-model');
 const Message = require('./message');
 const ApiError = require('../../utils/api-error');
@@ -6,9 +7,10 @@ const logger = require('../../../../shared/logging');
 const httpStatusCodes = require('../../utils/http-codes');
 
 const createMessageBody = (ruleSet) => ({
-  ...ruleSet,
-  // eslint-disable-next-line no-underscore-dangle
-  externalId: ruleSet._id.toString(),
+  name: ruleSet.name,
+  isActive: ruleSet.isActive,
+  rules: ruleSet.rules,
+  externalId: ruleSet.id || ruleSet._id.toString(),
 });
 
 const sendMessage = async (action, ruleSet) => {
@@ -53,9 +55,10 @@ exports.createRuleSet = async (req, res, next) => {
       }
     }
 
-    const ruleSet = await RuleSet.create({ ...req.body });
-    await sendMessage(messageAction.ADD, ruleSet);
-    return res.status(201).json({ id: ruleSet.id });
+    const ruleSetResult = await RuleSet.create({ ...req.body });
+
+    await sendMessage(messageAction.ADD, { ...req.body, id: ruleSetResult.id });
+    return res.status(201).json({ id: ruleSetResult.id });
   } catch (error) {
     return next(error);
   }
@@ -65,7 +68,6 @@ exports.updateRuleSet = async (req, res, next) => {
   try {
     const { id } = req.params;
     const update = { ...req.body };
-
     if (update.isActive) {
       const active = await RuleSet.findOne({ isActive: true }, '_id');
       if (active && active.id !== id) {

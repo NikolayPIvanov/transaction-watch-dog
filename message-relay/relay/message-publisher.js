@@ -41,18 +41,36 @@ const saveMessages = async (messages) => {
 
 const relayMessages = async () => {
   const rabbitMqBroker = await createBroker(rabbitMqUser, rabbitMqPassword);
-  await mongoose.connect(mongoUri);
-  const handler = async (broker) => {
-    logger.info('Getting pending messages');
-    const messages = await pendingMessages();
-    if (messages.length === 0) {
-      logger.info('No messages to process');
-      return;
+  try {
+    await mongoose.connect(mongoUri, { keepAlive: true, keepAliveInitialDelay: 300000 });
+    mongoose.connection.on('error', (err) => {
+      logger.error(err);
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+
+  const catchAsync = async (fn) => {
+    try {
+      await fn();
+    } catch (err) {
+      logger.error(err);
     }
-    const lockedMessages = lockMessages(messages);
-    await sendMessages(broker, lockedMessages);
-    await saveMessages(lockedMessages);
-    logger.info(`Sent ${lockedMessages.length} messages.`);
+  };
+
+  const handler = async (broker) => {
+    catchAsync(async () => {
+      logger.info('Getting pending messages');
+      const messages = await pendingMessages();
+      if (messages.length === 0) {
+        logger.info('No messages to process');
+        return;
+      }
+      const lockedMessages = lockMessages(messages);
+      await sendMessages(broker, lockedMessages);
+      await saveMessages(lockedMessages);
+      logger.info(`Sent ${lockedMessages.length} messages.`);
+    });
   };
 
   logger.info(`Starting message relay. Cron expression: ${cronExpression}.`);
