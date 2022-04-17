@@ -1,1 +1,3 @@
-const app = require('./app');
+const startApp = require('./app');
+
+startApp()

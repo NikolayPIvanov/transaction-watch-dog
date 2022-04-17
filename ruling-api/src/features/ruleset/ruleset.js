@@ -1,10 +1,19 @@
-const RuleSet = require('../../models/ruleset')
-const Message = require('../../models/message')
+const RuleSet = require('./ruleset-model')
+const Message = require('./message')
 const ApiError = require('../../utils/api-error')
-const messageAction = require('../../utils/message-actions')
+const messageAction = require('./message-actions')
+
+const createMessageBody = (ruleSet) => {
+    return {
+        ...ruleSet._doc,
+        externalId: ruleSet._doc._id.toString(),
+        _id: null
+    }
+}
 
 const sendMessage = async (action, ruleSet) => {
-    const messageData = { command: action, body: ruleSet };
+    const messageData = { command: action, body: createMessageBody(ruleSet) };
+    console.log(messageData)
     const message = new Message({
         ts: Date.now(),
         data: JSON.stringify(messageData),
@@ -25,12 +34,17 @@ exports.getRuleSets = async (req, res, next) => {
 }
 
 exports.getRuleSet = async (req, res, next) => {
-    const id = req.params.id
-    const ruleSet = await RuleSet.findById(id)
-    if (!ruleSet) {
-        throw new ApiError(`Ruleset with id:${id} could not be found.`)
+    try {
+        const id = req.params.id
+        const ruleSet = await RuleSet.findById(id)
+        if (!ruleSet) {
+            throw new ApiError(`Ruleset with id:${id} could not be found.`)
+        }
+        return res.json(ruleSet)
     }
-    return res.json(ruleSet)
+    catch (err) {
+        next(err)
+    }
 }
 
 exports.createRuleSet = async (req, res, next) => {
@@ -48,7 +62,7 @@ exports.updateRuleSet = async (req, res, next) => {
     try {
         const id = req.params.id
         const update = { ...req.body }
-        const ruleSet = await RuleSet.findByIdAndUpdate(id, update)
+        const ruleSet = await RuleSet.findByIdAndUpdate(id, update, { returnDocument: 'after' })
         if (!ruleSet) {
             throw new ApiError(`Ruleset with id:${id} could not be found.`)
         }

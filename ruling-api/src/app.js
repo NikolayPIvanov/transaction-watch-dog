@@ -3,34 +3,52 @@ const mongoose = require('mongoose');
 const cors = require('cors')
 const helmet = require("helmet");
 const compression = require('compression');
+const ApiError = require('./utils/api-error')
 
-const { httpLogger, logger } = require('./log')
+const errorHandler = require('./utils/error-handler')
+const { logger, successHandler: successHandlerLog, errorHandler: errorHandlerLog } = require('./log')
 const routes = require('./routes')
 const { serverConfig } = require('./config')
+const httpStatusCodes = require('./utils/http-codes');
 
 const app = express();
 
 app.use(cors()); // Enable All CORS
 
-app.use(compression())
+app.use(compression()) // Add compression
 
 app.use(helmet()); // Adding Security Headers
 
 app.use(express.json()); // JSON parsing
 
-// app.use(expressWinston.logger(logger)); // Request logging
-
-app.use(httpLogger)
+app.use(successHandlerLog);
+app.use(errorHandlerLog);
 
 app.use('/api', routes)
 
-main = async () => {
+app.use('*', (req, res, next) => {
+    next(new ApiError('Route not found', httpStatusCodes.NOT_FOUND, 'Invalid route'));
+});
+
+// Error handling middleware, we delegate the handling to the centralized error handler
+app.use(async (err, req, res, next) => {
+    await errorHandler.handleError(err, req, res, next); //The error handler will send a response
+});
+
+process.on("uncaughtException", error => {
+    errorHandler.handleError(error);
+});
+
+process.on("unhandledRejection", (reason) => {
+    errorHandler.handleError(reason);
+});
+
+start = async (port) => {
     await mongoose.connect(serverConfig.mongoUri);
-    server = app.listen(serverConfig.port, () => {
-        logger.info(`Listening to port ${serverConfig.port}`);
+    const serverPort = port || serverConfig.port;
+    server = app.listen(serverPort, () => {
+        logger.info(`Listening to port ${serverPort}`);
     });
 }
 
-main().catch(err => console.error(err))
-
-module.exports = app;
+module.exports = start;

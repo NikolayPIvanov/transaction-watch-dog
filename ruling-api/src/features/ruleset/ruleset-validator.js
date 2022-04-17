@@ -1,8 +1,8 @@
 const Joi = require('joi')
+const mongoose = require('mongoose')
 
 const ruleSchema = Joi.object({
     name: Joi.string()
-        .alphanum()
         .min(3)
         .max(50)
         .required(),
@@ -17,45 +17,63 @@ const ruleSchema = Joi.object({
     status: Joi.bool()
 })
 
-const createRuleSetSchema = Joi.object().keys({
+const createRuleSetSchema = {
     body: Joi.object({
         name: Joi.string()
-            .alphanum()
             .min(3)
             .max(50)
             .required(),
         isActive: Joi.bool().required(),
         rules: Joi.array().items(ruleSchema)
-    })
-}).unknown(true)
-
-const getRuleSetSchema = Joi.object().keys({
-    params: Joi.object({
-        id: Joi.string().required()
     }).unknown(true)
-}).unknown(true)
+}
 
-const updateRuleSetSchema = Joi.object().keys({
+const getRuleSetSchema = {
     params: Joi.object({
         id: Joi.string().required()
-    }),
+            .custom((value, helpers) => {
+                if (!mongoose.Types.ObjectId.isValid(value)) {
+                    return helpers.error(`any.invalid`)
+                }
+                return value
+            })
+    }).unknown(true)
+}
+
+const updateRuleSetSchema = {
+    params: Joi.object({
+        id: Joi.string()
+            .required()
+            .custom((value, helpers) => {
+                if (!mongoose.Types.ObjectId.isValid(value)) {
+                    return helpers.error(`any.invalid`)
+                }
+                return value
+            })
+    }).unknown(true),
     body: Joi.object({
-        id: Joi.string().required(),
         name: Joi.string()
-            .alphanum()
             .min(3)
             .max(50)
             .required(),
         isActive: Joi.bool().required(),
         rules: Joi.array().items(ruleSchema)
-    })
-})
-
-const deleteRuleSetSchema = Joi.object().keys({
-    params: Joi.object({
-        id: Joi.string().required()
     }).unknown(true)
-}).unknown(true)
+}
+
+const deleteRuleSetSchema = {
+    params: Joi.object({
+        id: Joi
+            .string()
+            .required()
+            .custom((value, helpers) => {
+                if (!mongoose.Types.ObjectId.isValid(value)) {
+                    return helpers.error(`any.invalid`)
+                }
+                return value
+            })
+    }).unknown(true)
+}
 
 module.exports = {
     createRuleSetSchema,
