@@ -25,7 +25,7 @@ const errorConverter = (err) => {
 };
 
 const errorHandler = (err, res) => {
-    let { name, statusCode, message, details } = err;
+    const { name, statusCode, message, details } = err;
 
     const response = {
         message: name,

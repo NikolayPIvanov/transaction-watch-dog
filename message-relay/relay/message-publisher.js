@@ -2,6 +2,7 @@ const createBroker = require('./broker')
 const mongoose = require('mongoose')
 const scheduler = require('./scheduler')
 const Message = require('./message')
+const logger = require('../../shared/logging')
 const { mongoUri, rabbitMqPassword, rabbitMqUser, cronExpression } = require('../config');
 
 const pendingMessages = async () => {
@@ -37,12 +38,15 @@ const relayMessages = async () => {
     const broker = await createBroker(rabbitMqUser, rabbitMqPassword)
     await mongoose.connect(mongoUri);
     const handler = async (broker) => {
+        logger.info('Getting pending messages')
         const messages = await pendingMessages()
         const lockedMessages = lockMessages(messages)
         await sendMessages(broker, lockedMessages)
         await saveMessages(lockedMessages)
+        logger.info(`Messages sent. Count ${lockedMessages.length}`)
     }
-    console.log(`Starting message relay. Cron expression: ${cronExpression}`)
+
+    logger.info(`Starting message relay. Cron expression: ${cronExpression}`)
     await scheduler(broker, cronExpression, handler)
 }
 

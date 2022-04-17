@@ -2,6 +2,7 @@ const RuleSet = require('./ruleset-model')
 const Message = require('./message')
 const ApiError = require('../../utils/api-error')
 const messageAction = require('./message-actions')
+const logger = require('../../../../shared/logging')
 
 const createMessageBody = (ruleSet) => {
     return {
@@ -13,7 +14,7 @@ const createMessageBody = (ruleSet) => {
 
 const sendMessage = async (action, ruleSet) => {
     const messageData = { command: action, body: createMessageBody(ruleSet) };
-    console.log(messageData)
+    logger.info(messageData)
     const message = new Message({
         ts: Date.now(),
         data: JSON.stringify(messageData),
