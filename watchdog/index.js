@@ -4,7 +4,6 @@ const logger = require('../shared/logging');
 
 const { messageListener, TransactionListener } = require('./listeners');
 const { RuleSet } = require('./models');
-// const rulesEngine = require('./rules-engine');
 const BlockListener = require('./listeners/block-listener');
 
 const loadRuleSetAsync = async () => {
