@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/index.js"
+    "start": "nodemon src/index.js",
+    "lint": "./node_modules/.bin/eslint"
   },
   "author": "Nikolay Ivanov",
   "license": "ISC",
@@ -26,5 +27,11 @@
     "node-schedule": "^2.1.0",
     "nodemon": "^2.0.15",
     "winston": "^3.7.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.13.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.26.0"
   }
 }

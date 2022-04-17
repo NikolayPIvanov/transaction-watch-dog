@@ -1,5 +1,5 @@
 const express = require('express');
-const ruleSetRoutes = require('./v1/ruleset')
+const ruleSetRoutes = require('./v1/ruleset');
 
 const router = express.Router();
 

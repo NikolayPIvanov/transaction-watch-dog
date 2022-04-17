@@ -1,5 +1,5 @@
 module.exports = {
-    ADD: "ADD",
-    UPDATE: "UPDATE",
-    DELETE: "DELETE"
+  ADD: 'ADD',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
 };

@@ -1,5 +1,5 @@
-const serverConfig = require('./server')
+const serverConfig = require('./server');
 
 module.exports = {
-    serverConfig
-}
+  serverConfig,
+};

@@ -1,3 +1,3 @@
 const startApp = require('./app');
 
-startApp()
+startApp();

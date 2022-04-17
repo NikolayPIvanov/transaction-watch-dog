@@ -1,7 +1,7 @@
-const ruleSetHandlers = require('../ruleset/ruleset')
-const ruleSetValidators = require('../ruleset/ruleset-validator')
+const ruleSetHandlers = require('./ruleset');
+const ruleSetValidators = require('./ruleset-validator');
 
 module.exports = {
-    ruleSetHandlers,
-    ruleSetValidators
-}
+  ruleSetHandlers,
+  ruleSetValidators,
+};
