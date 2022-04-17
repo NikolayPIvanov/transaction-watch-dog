@@ -1,3 +1,3 @@
-const { relayMessages } = require('./relay')
+const { relayMessages } = require('./relay');
 
-relayMessages()
+relayMessages();

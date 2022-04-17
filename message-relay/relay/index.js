@@ -1,5 +1,5 @@
-const { relayMessages } = require('./message-publisher')
+const { relayMessages } = require('./message-publisher');
 
 module.exports = {
-  relayMessages
-}
+  relayMessages,
+};

@@ -1,8 +1,10 @@
-const { mongoUri, rabbitMqPassword, rabbitMqUser, cron: cronExpression } = require('./relay')
+const {
+  mongoUri, rabbitMqPassword, rabbitMqUser, cron: cronExpression,
+} = require('./relay');
 
 module.exports = {
-    mongoUri,
-    rabbitMqUser,
-    rabbitMqPassword,
-    cronExpression
-}
+  mongoUri,
+  rabbitMqUser,
+  rabbitMqPassword,
+  cronExpression,
+};
