@@ -1,4 +1,11 @@
-const mongoose = require('mongoose')
-const { ruleSetSchema } = require('../../shared/models/ruleset-schema')
+const mongoose = require('mongoose');
+const { ruleSetSchema } = require('../../shared/models/ruleset-schema');
 
-module.exports = mongoose.model('RuleSet', ruleSetSchema)
+ruleSetSchema.add({
+  externalId: {
+    type: String,
+    required: true,
+  },
+});
+
+module.exports = mongoose.model('RuleSet', ruleSetSchema);

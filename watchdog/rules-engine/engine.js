@@ -1,59 +1,76 @@
-const web3 = require('web3')
-
-const build = function (rules, tx) {
-    const matchingRules = []
-    matchingRules.push(fromToRule(rules, tx))
-    // TODO: Refactor
-    matchingRules.push(valueRule(rules, tx, 'lowerValueThreshold', 'upperValueThreshold'))
-    matchingRules.push(valueRule(rules, tx, 'lowerGasThreshold', 'upperGasThreshold'))
-    matchingRules.push(statusRule(rules, tx));
-    matchingRules.push(inputRule(rules, tx));
-    return matchingRules.filter(r => r);
-}
+const web3 = require('web3');
 
 const fromToRule = (rules, tx) => {
-    const fromToRules = rules.filter(r => r.from || r.to)
-    return fromToRules.find(r => r.from === tx.from || r.to === tx.to)
-}
+  const fromToRules = rules.filter((r) => r.from || r.to);
+  return fromToRules.find((r) => r.from === tx.from || r.to === tx.to);
+};
 
-const valueRule = (rules, tx, lowerProperty, upperProperty) => {
-    const valueRules = rules.filter(r => r[lowerProperty] !== undefined || r[upperProperty] !== undefined)
-    const threshold = (rule, tx) => {
-        const [lower, upper] = [rule[lowerProperty], rule[upperProperty]]
-        const value = Number(tx.value)
-        const match = thresholdFilter(lower, upper, value)
-        return match ? rule : null
-    }
+const thresholdFilter = (lower, upper, rule, value) => {
+  const ethValue = Number(web3.utils.fromWei(value, 'ether'));
+  if (lower !== undefined && upper !== undefined) {
+    return lower <= ethValue && ethValue <= upper;
+  }
 
-    const matchingFilter = valueRules.find(r => threshold(r, tx))
-    return matchingFilter;
-}
+  let match = false;
+  if (lower !== undefined) {
+    match = lower <= ethValue;
+  }
+
+  if (upper !== undefined) {
+    match = ethValue <= upper;
+  }
+
+  return match ? rule : null;
+};
+
+const valueRule = (rules, transaction) => {
+  const valueRules = rules.filter((r) => r.lowerValueThreshold !== undefined
+    || r.upperValueThreshold !== undefined);
+
+  const threshold = (rule, tx) => {
+    const [lower, upper] = [rule.lowerValueThreshold, rule.upperValueThreshold];
+    return thresholdFilter(lower, upper, rule, tx.value);
+  };
+
+  const matchingFilter = valueRules.find((rule) => threshold(rule, transaction));
+  return matchingFilter;
+};
+
+const gasRule = (rules, transaction) => {
+  const valueRules = rules.filter((r) => r.lowerGasThreshold !== undefined
+    || r.upperGasThreshold !== undefined);
+
+  const threshold = (rule, tx) => {
+    const [lower, upper] = [rule.lowerGasThreshold, rule.upperGasThreshold];
+    return thresholdFilter(lower, upper, rule, tx.value);
+  };
+
+  const matchingFilter = valueRules.find((rule) => threshold(rule, transaction));
+  return matchingFilter;
+};
 
 const statusRule = (rules, tx) => {
-    const statusRules = rules.filter(r => r.status !== undefined);
-    return statusRules.find(rule => rule.status === tx.status)
-}
+  const statusRules = rules.filter((r) => r.status !== undefined);
+  return statusRules.find((rule) => rule.status === tx.status);
+};
 
 const inputRule = (rules, tx) => {
-    const inputRules = rules.filter(r => r.input !== undefined);
-    return inputRules.find(rule => web3.toAscii(tx.input).contains(rule.input))
-}
+  const inputRules = rules.filter((r) => r.input !== undefined);
+  return inputRules.find((rule) => web3.toAscii(tx.input).contains(rule.input));
+};
 
-const thresholdFilter = (lower, upper, value) => {
-    let match = false
-    if (lower !== undefined && upper !== undefined) {
-        match = lower <= value && value <= upper
-    }
+const run = (rules, tx) => {
+  const matchedRules = [];
 
-    if (lower !== undefined && !match) {
-        match = lower <= value
-    }
+  matchedRules.push(fromToRule(rules, tx));
+  matchedRules.push(valueRule(rules, tx));
+  matchedRules.push(gasRule(rules, tx));
+  matchedRules.push(statusRule(rules, tx));
+  matchedRules.push(inputRule(rules, tx));
 
-    if (upper !== undefined && !match) {
-        match = value <= upper
-    }
+  const foundRules = matchedRules.filter((r) => r);
 
-    return match;
-}
+  return foundRules;
+};
 
-module.exports = build
+module.exports = run;

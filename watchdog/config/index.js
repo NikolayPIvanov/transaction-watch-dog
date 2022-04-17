@@ -1,3 +1,3 @@
-const watchdogConfig = require('./watchdog')
+const watchdogConfig = require('./watchdog');
 
-module.exports = watchdogConfig
+module.exports = watchdogConfig;

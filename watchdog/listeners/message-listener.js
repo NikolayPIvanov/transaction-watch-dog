@@ -1,68 +1,87 @@
-const watchdogConfig = require('../config')
-const rascalConfig = require('../../shared/config/rabbitmq')
+/* eslint-disable no-underscore-dangle */
 const Rascal = require('rascal');
-const { rabbitMqUser, rabbitMqPassword } = watchdogConfig
-const { RuleSet } = require('../models')
+const watchdogConfig = require('../config');
+const rascalConfig = require('../../shared/config/rabbitmq');
+const logger = require('../../shared/logging');
 
-const broker = async () => {
-    const brokerConfig = rascalConfig({ user: rabbitMqUser, password: rabbitMqPassword }).rascal
-    const broker = await Rascal.BrokerAsPromised.create(Rascal.withDefaultConfig(brokerConfig));
-    broker.on('error', console.error);
-    return broker
-}
+const { rabbitMqUser, rabbitMqPassword } = watchdogConfig;
+const { RuleSet } = require('../models');
 
-const subscribe = async (broker, topic, cb) => {
-    const subscription = await broker.subscribe(topic);
-    subscription
-        .on('message', async function (message, content, ackOrNack) {
-            cb(message, content, ackOrNack)
-        })
-        .on('error', console.error);
-}
+const createBroker = async () => {
+  const brokerConfig = rascalConfig({ user: rabbitMqUser, password: rabbitMqPassword }).rascal;
+  const broker = await Rascal.BrokerAsPromised.create(Rascal.withDefaultConfig(brokerConfig));
+  broker.on('error', logger.error);
+  return broker;
+};
 
-const addRulesetListener = async (broker, cb) => {
-    const topic = 'addRuleSet'
-    const handler = async (message, content, ackOrNack) => {
-        const parsedContent = JSON.parse(content)
-        console.log(`Adding new ruleset: ${JSON.stringify(parsedContent.body)}`)
-        const ruleSet = new RuleSet({ ...parsedContent.body })
-        await ruleSet.save()
-        cb(ruleSet)
-        ackOrNack()
+const subscribe = async (broker, topic, action) => {
+  const subscription = await broker.subscribe(topic);
+  subscription
+    .on('message', async (message, content, ackOrNack) => {
+      action(message, content, ackOrNack);
+    })
+    .on('error', logger.error);
+};
+
+const parseContent = (content) => {
+  const { body } = JSON.parse(content);
+  const result = {};
+  Object.keys(body).forEach((property) => {
+    if (!property.startsWith('_')) {
+      result[property] = body[property];
     }
+  });
+  return result;
+};
 
-    await subscribe(broker, topic, handler)
-}
+const addRulesetListener = async (broker, action) => {
+  const topic = 'addRuleSet';
+  const handler = async (message, content, ackOrNack) => {
+    const ruleSetCreate = parseContent(content);
+    logger.log(`Adding new ruleset: ${content}`);
+    const ruleSet = await RuleSet.create({ ...ruleSetCreate });
+    action(ruleSet);
+    ackOrNack();
+  };
+
+  await subscribe(broker, topic, handler);
+};
 
 const updateRulesetListener = async (broker, cb) => {
-    const topic = 'updateRuleSet'
-    const handler = async (message, content, ackOrNack) => {
-        const parsedContent = JSON.parse(content)
-        console.log(`Updating ruleset: ${parsedContent.body}`)
-        const id = req.params._id
-        const update = { ...parsedContent.body }
-        const ruleSet = await RuleSet.findByIdAndUpdate(id, update)
-        cb(ruleSet)
-        ackOrNack()
-    }
+  const topic = 'updateRuleSet';
+  const handler = async (message, content, ackOrNack) => {
+    const ruleSetUpdate = parseContent(content);
+    logger.info(`Updating ruleset: ${content}`);
+    const filter = { externalId: ruleSetUpdate.externalId };
+    const update = {
+      $set: {
+        ...ruleSetUpdate,
+      },
+    };
+    const updatedResult = await RuleSet.findOneAndUpdate(filter, update, { returnDocument: 'after' });
+    const ruleSet = updatedResult._doc;
+    ruleSet.rules = ruleSet.rules.map((r) => r._doc);
+    cb(ruleSet);
+    ackOrNack();
+  };
 
-    await subscribe(broker, topic, handler)
-}
+  await subscribe(broker, topic, handler);
+};
 
 const deleteRulesetListener = async (broker, cb) => {
-    const topic = 'deleteRuleSet'
-    const handler = async (message, content, ackOrNack) => {
-        const parsedContent = JSON.parse(content)
-        console.log(`Deleting ruleset: ${parsedContent.body}`)
-        const ruleSet = await RuleSet.findByIdAndDelete(parsedContent._id)
-        cb(ruleSet)
-        ackOrNack()
-    }
+  const topic = 'deleteRuleSet';
+  const handler = async (message, content, ackOrNack) => {
+    const ruleSetDelete = parseContent(content);
+    logger.info(`Deleting ruleset: ${ruleSetDelete}`);
+    const ruleSet = await RuleSet.findOneAndDelete({ externalId: ruleSetDelete.externalId });
+    cb(ruleSet);
+    ackOrNack();
+  };
 
-    await subscribe(broker, topic, handler)
-}
+  await subscribe(broker, topic, handler);
+};
 
-exports.broker = broker
-exports.add = addRulesetListener
-exports.update = updateRulesetListener
-exports.delete = deleteRulesetListener
+exports.broker = createBroker;
+exports.add = addRulesetListener;
+exports.update = updateRulesetListener;
+exports.delete = deleteRulesetListener;

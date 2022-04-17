@@ -1,34 +1,41 @@
-const config = require('./config')
-const { messageListener, TransactionListener } = require('./listeners')
 const mongoose = require('mongoose');
-const { RuleSet } = require('./models')
-const rulesEngine = require('./rules-engine')
+const config = require('./config');
+const logger = require('../shared/logging');
 
-loadRuleSetAsync = async () => {
-    console.log('Loading currently active configuration...')
-    const filter = { isActive: true }
-    return await RuleSet.findOne(filter);
-}
+const { messageListener, TransactionListener } = require('./listeners');
+const { RuleSet } = require('./models');
+// const rulesEngine = require('./rules-engine');
+const BlockListener = require('./listeners/block-listener');
 
-main = async () => {
-    await mongoose.connect(config.mongoUri);
+const loadRuleSetAsync = async () => {
+  logger.info('Loading currently active configuration...');
+  const filter = { isActive: true };
+  return RuleSet.findOne(filter);
+};
 
-    const ruleSet = await loadRuleSetAsync()
-    console.log(`Active configuration loaded: ${ruleSet}`)
+const main = async () => {
+  try {
+    await mongoose.connect(config.mongoUri, { keepAlive: true, keepAliveInitialDelay: 300000 });
+    mongoose.connection.on('error', (err) => {
+      logger.error(err);
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+  const broker = await messageListener.broker();
 
-    const broker = await messageListener.broker();
-    const transactions = new TransactionListener(config.infuraId, ruleSet)
+  const activeRuleSet = await loadRuleSetAsync();
+  logger.info(`Active configuration loaded: ${activeRuleSet}`);
 
-    await messageListener.add(broker, transactions.onRuleSetAddUpdate)
-    await messageListener.update(broker, transactions.onRuleSetAddUpdate)
-    await messageListener.delete(broker, transactions.onRuleSetDeleted)
+  logger.info(`Starting watchdog in mode '${config.mode}'.`);
+  const networkWatcher = config.mode === 'block' ? new BlockListener(config.infuraId, activeRuleSet)
+    : new TransactionListener(config.infuraId, activeRuleSet);
 
-    transactions.subscribe()
-    transactions.listen((ruleSet, tx) => {
-        debugger;
-        const matchingRules = rulesEngine(ruleSet.rules, tx)
-        return matchingRules.length === 0 ? null : matchingRules[0]._id
-    })
-}
+  await messageListener.add(broker, networkWatcher.onRuleSetAddUpdate);
+  await messageListener.update(broker, networkWatcher.onRuleSetAddUpdate);
+  await messageListener.delete(broker, networkWatcher.onRuleSetDeleted);
 
-main().catch(err => console.error(err))
+  networkWatcher.watch();
+};
+
+main().catch((err) => logger.error(err));

@@ -1,3 +1,3 @@
-const rulesEngine = require('./engine')
+const rulesEngine = require('./engine');
 
-module.exports = rulesEngine
+module.exports = rulesEngine;

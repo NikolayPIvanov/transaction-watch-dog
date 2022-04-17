@@ -1,7 +1,7 @@
-const RuleSet = require('./ruleset')
-const Transaction = require('./transaction')
+const RuleSet = require('./ruleset');
+const Transaction = require('./transaction');
 
 module.exports = {
-    RuleSet,
-    Transaction
-}
+  RuleSet,
+  Transaction,
+};
