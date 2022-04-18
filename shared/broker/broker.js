@@ -1,6 +1,6 @@
 const Rascal = require('rascal');
-const { rabbitMqConfig } = require('../../shared/config');
-const logger = require('../../shared/logging');
+const { rabbitMqConfig } = require('../config');
+const logger = require('../logging');
 
 const broker = async (rabbitMqUser, rabbitMqPassword) => {
   const brokerConfig = rabbitMqConfig({ user: rabbitMqUser, password: rabbitMqPassword }).rascal;

@@ -1,3 +1,3 @@
-const { relayMessages } = require('./relay');
+const { startScheduler } = require('./relay');
 
-relayMessages();
+startScheduler();

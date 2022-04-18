@@ -1,10 +1,8 @@
 const mongoose = require('mongoose');
-const createBroker = require('./broker');
-const scheduler = require('./scheduler');
 const Message = require('./message');
 const logger = require('../../shared/logging');
 const {
-  mongoUri, rabbitMqPassword, rabbitMqUser, cronExpression,
+  mongoUri, cronExpression,
 } = require('../config');
 
 const pendingMessages = async () => {
@@ -16,18 +14,21 @@ const pendingMessages = async () => {
 // If the relay is replicated we need lock on the messages so we do no sent duplicate data
 const lockMessages = (messages) => messages;
 
-const sendMessages = (broker, messages) => {
+const sendMessages = async (broker, messages) => {
   const sentMessages = messages.map((message) => ({
     ...message,
     sent: true,
   }));
 
-  sentMessages.forEach(async (message) => {
+  const requests = sentMessages.map((message) => {
     const data = JSON.parse(message.data);
     const publisher = `messages.${data.command.toLowerCase()}`;
-    const publication = await broker.publish(publisher, message.data);
+    const publication = broker.publish(publisher, message.data);
     publication.on('error', logger.error);
+    return publication;
   });
+
+  await Promise.all(requests);
   return sentMessages;
 };
 
@@ -39,31 +40,32 @@ const saveMessages = async (messages) => {
   );
 };
 
-const relayMessages = async () => {
-  const rabbitMqBroker = await createBroker(rabbitMqUser, rabbitMqPassword);
+const catchAsync = async (fn) => {
   try {
+    await fn();
+  } catch (err) {
+    logger.error(err);
+  }
+};
+
+const mongoConnect = async () => {
+  catchAsync(async () => {
     await mongoose.connect(mongoUri, { keepAlive: true, keepAliveInitialDelay: 300000 });
     mongoose.connection.on('error', (err) => {
       logger.error(err);
     });
-  } catch (error) {
-    logger.error(error);
-  }
+  });
+};
 
-  const catchAsync = async (fn) => {
-    try {
-      await fn();
-    } catch (err) {
-      logger.error(err);
-    }
-  };
+const createRelayHandler = async (broker) => {
+  await mongoConnect();
 
-  const handler = async (broker) => {
+  const handler = async () => {
     catchAsync(async () => {
-      logger.info('Getting pending messages');
+      logger.info('Getting pending messages.');
       const messages = await pendingMessages();
       if (messages.length === 0) {
-        logger.info('No messages to process');
+        logger.info('No messages to process.');
         return;
       }
       const lockedMessages = lockMessages(messages);
@@ -74,9 +76,10 @@ const relayMessages = async () => {
   };
 
   logger.info(`Starting message relay. Cron expression: ${cronExpression}.`);
-  await scheduler(rabbitMqBroker, cronExpression, handler);
+
+  return handler;
 };
 
 module.exports = {
-  relayMessages,
+  createRelayHandler,
 };

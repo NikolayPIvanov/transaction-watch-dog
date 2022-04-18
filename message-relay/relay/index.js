@@ -1,5 +1,22 @@
-const { relayMessages } = require('./message-publisher');
+const cronScheduler = require('cron');
+const { createRelayHandler } = require('./message-relay');
+const createBroker = require('../../shared/broker');
+const {
+  rabbitMqPassword, rabbitMqUser, cronExpression,
+} = require('../config');
+
+const startScheduler = async () => {
+  const rabbitMqBroker = await createBroker(rabbitMqUser, rabbitMqPassword);
+  const handler = await createRelayHandler(rabbitMqBroker);
+  const job = new cronScheduler.CronJob(
+    cronExpression,
+    async () => {
+      await handler();
+    },
+  );
+  job.start();
+};
 
 module.exports = {
-  relayMessages,
+  startScheduler,
 };
