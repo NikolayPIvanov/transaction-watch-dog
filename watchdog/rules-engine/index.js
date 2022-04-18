@@ -4,6 +4,7 @@ const rulesEngine = require('./engine');
 const config = require('../config');
 const { RuleSet } = require('../models');
 const { messageListener, TransactionListener, BlockTransactionsListener } = require('../listeners');
+const state = require('./rules-state');
 
 const loadRuleSetAsync = async () => {
   logger.info('Loading currently active configuration...');
@@ -29,9 +30,10 @@ const start = async () => {
   const activeRuleSet = await loadRuleSetAsync();
   logger.info(`Active configuration loaded: ${activeRuleSet}`);
 
+  state.setRuleSet(activeRuleSet);
   logger.info(`Starting watchdog in mode '${config.mode}'.`);
-  const networkWatcher = config.mode === 'block' ? new BlockTransactionsListener(config.infuraId, activeRuleSet)
-    : new TransactionListener(config.infuraId, activeRuleSet);
+  const networkWatcher = config.mode === 'block' ? new BlockTransactionsListener(config.infuraId, state)
+    : new TransactionListener(config.infuraId, state);
 
   await messageListener.add(broker, networkWatcher.onRuleSetAdd);
   await messageListener.update(broker, networkWatcher.onRuleSetUpdated);

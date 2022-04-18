@@ -9,8 +9,8 @@ const createBlockNumberRange = (local, remote, max = 10) => (local === -1
   ? [remote] : range(local + 1, remote).slice(0, max));
 
 class BlockTransactionsListener extends Listener {
-  constructor(projectId, activeRuleSet) {
-    super(projectId, activeRuleSet);
+  constructor(projectId, state) {
+    super(projectId, state);
     logger.info('Block Transactions Listener created.');
   }
 
@@ -64,7 +64,8 @@ class BlockTransactionsListener extends Listener {
   // https://web3js.readthedocs.io/en/v1.2.11/web3-eth.html#getblock
   queryNetwork = async (rulingEngine, maxBlockBatch = 50) => {
     logger.info('Starting network query iteration.');
-    if (!this.ruleSet || !this.ruleSet.rules || this.ruleSet.rules.length === 0) {
+    const ruleSet = { ...this.state.getRuleSet() };
+    if (!ruleSet || !ruleSet.rules || ruleSet.rules.length === 0) {
       logger.warn('No active ruleset and rules. Ending iteration.');
       return;
     }
@@ -79,7 +80,7 @@ class BlockTransactionsListener extends Listener {
       return;
     }
 
-    const dbTransactions = this.createDbTransactionModels(this.ruleSet, transactions, rulingEngine);
+    const dbTransactions = this.createDbTransactionModels(ruleSet, transactions, rulingEngine);
     const validTransactions = dbTransactions.filter((tx) => tx);
     logger.info(`Blocks: ${blockNumbers}. Matched transactions count: ${validTransactions.length}.`);
     await Transaction.create(validTransactions);

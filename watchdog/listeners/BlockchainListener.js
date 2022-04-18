@@ -5,43 +5,39 @@ const logger = require('../../shared/logging');
 class BlockchainListener {
   web3;
 
-  ruleSet;
-
-  constructor(infuraProjectId, activeRuleSet) {
+  constructor(infuraProjectId, state) {
     this.web3ws = new Web3(new Web3.providers.WebsocketProvider(`wss://mainnet.infura.io/ws/v3/${infuraProjectId}`));
     this.web3 = new Web3(new Web3.providers.HttpProvider(`https://mainnet.infura.io/v3/${infuraProjectId}`));
-    // eslint-disable-next-line no-underscore-dangle
-    this.ruleSet = activeRuleSet?._doc || activeRuleSet;
+    this.state = state;
   }
 
   onRuleSetAdd = (rs) => {
     logger.info('On rule set add.');
-    if (this.ruleSet?.isActive) {
-      this.ruleSet = rs;
-      // eslint-disable-next-line no-underscore-dangle
-      logger.info(`Active rule set is set to ${this.ruleSet._id.toString()}.`);
+    if (rs?.isActive) {
+      this.state.setRuleSet(rs);
+      logger.info(`Active rule set is set to ${rs}.`);
     }
-    logger.info('On rule set add.');
   };
 
   onRuleSetUpdated = (rs) => {
     logger.info('On rule set update.');
-    if (this.ruleSet?.externalId === rs?.externalId) {
-      this.ruleSet = rs;
+    const ruleSet = this.state.getRuleSet();
+    if (ruleSet?.externalId === rs?.externalId) {
+      this.state.setRuleSet(rs);
       // eslint-disable-next-line no-underscore-dangle
       logger.info('Active rule was updated.');
-      if (!this.ruleSet.isActive) {
+      if (!ruleSet.isActive) {
         logger.info('Current rule set is deactivated.');
-        this.ruleSet = null;
+        this.state.setRuleSet(null);
       }
     }
   };
 
   onRuleSetDeleted = (rs) => {
     logger.info('On rule set delete.');
-    if (this.ruleSet?.externalId !== rs?.externalId) return;
+    if (this.state.getRuleSet()?.externalId !== rs?.externalId) return;
     logger.info('Current active ruleset is deleted');
-    this.ruleSet = null;
+    this.state.setRuleSet(null);
   };
 
   // eslint-disable-next-line class-methods-use-this

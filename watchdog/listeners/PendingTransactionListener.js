@@ -9,8 +9,8 @@ class PendingTransactionListener extends BlockchainListener {
 
   subscription;
 
-  constructor(projectId, activeRuleSet) {
-    super(projectId, activeRuleSet);
+  constructor(projectId, state) {
+    super(projectId, state);
     this.web3ws = new Web3(new Web3.providers.WebsocketProvider(`wss://mainnet.infura.io/ws/v3/${projectId}`));
     this.subscription = this.web3ws.eth.subscribe('pendingTransactions');
   }
@@ -21,11 +21,11 @@ class PendingTransactionListener extends BlockchainListener {
 
   onTransaction = async (rulingEngine, txHash) => {
     try {
-      if (!this.ruleSet || !this.ruleSet.rules || this.ruleSet.rules.length === 0) {
+      const ruleSet = { ...this.state.ruleSet };
+      if (!ruleSet || !ruleSet.rules || ruleSet.rules.length === 0) {
         logger.warn('No active ruleset and rules. Ending iteration.');
         return;
       }
-      const ruleSet = { ...this.ruleSet };
 
       const transaction = await this.web3.eth.getTransaction(txHash);
       if (!transaction) return;
