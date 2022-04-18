@@ -59,7 +59,7 @@ const inputRule = (rules, tx) => {
   return inputRules.find((rule) => web3.toAscii(tx.input).contains(rule.input));
 };
 
-const run = (rules, tx) => {
+const findMatchingRules = (rules, tx) => {
   const matchedRules = [];
 
   matchedRules.push(fromToRule(rules, tx));
@@ -68,9 +68,7 @@ const run = (rules, tx) => {
   matchedRules.push(statusRule(rules, tx));
   matchedRules.push(inputRule(rules, tx));
 
-  const foundRules = matchedRules.filter((r) => r);
-
-  return foundRules;
+  return matchedRules.filter((r) => r);
 };
 
-module.exports = run;
+module.exports = findMatchingRules;

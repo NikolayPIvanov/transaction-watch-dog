@@ -15,20 +15,17 @@ const pendingMessages = async () => {
 const lockMessages = (messages) => messages;
 
 const sendMessages = async (broker, messages) => {
-  const sentMessages = messages.map((message) => ({
-    ...message,
-    sent: true,
-  }));
-
-  const requests = sentMessages.map((message) => {
+  const sentMessages = messages.map(async (message) => {
     const data = JSON.parse(message.data);
     const publisher = `messages.${data.command.toLowerCase()}`;
-    const publication = broker.publish(publisher, message.data);
+    const publication = await broker.publish(publisher, message.data);
     publication.on('error', logger.error);
-    return publication;
+    return {
+      ...message,
+      sent: true,
+    };
   });
 
-  await Promise.all(requests);
   return sentMessages;
 };
 
