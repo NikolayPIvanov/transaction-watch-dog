@@ -13,11 +13,11 @@ const ruleSetSchema = new Schema({
       from: { type: String, required: false },
       to: { type: String, required: false },
 
-      // Value in Wei
+      // Value in ether
       lowerValueThreshold: { type: Number, required: false },
       upperValueThreshold: { type: Number, required: false },
 
-      // Gas Price in Wei
+      // Gas Price in ether
       lowerGasThreshold: { type: Number, required: false },
       upperGasThreshold: { type: Number, required: false },
 
