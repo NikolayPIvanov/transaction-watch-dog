@@ -1,0 +1,166 @@
+{
+	"info": {
+		"_postman_id": "9b99b774-4a4d-4b68-860f-d2c1bd2ccbb1",
+		"name": "Ruling API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create ruleset",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Standard Ruleset for Value\",\r\n    \"isActive\": true,\r\n    \"rules\": [\r\n        {\r\n            \"name\": \"Value Lower and Upper Threshold Rule\",\r\n            \"lowerValueThreshold\": 25,\r\n            \"upperValueThreshold\": 70\r\n        }\r\n    ]   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/v1/rules",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"rules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get rulesets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/v1/rules/625842168032777bab8ee3b0",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"rules",
+						"625842168032777bab8ee3b0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Single RuleSet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/v1/rules/625842168032777bab8ee3b0",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"rules",
+						"625842168032777bab8ee3b0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Rule Set",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"name\": \"Standard Ruleset for Value\",\r\n        \"isActive\": true,\r\n        \"rules\": [\r\n            {\r\n                \"name\": \"Value Lower Threshold\",\r\n                \"lowerValueThreshold\": 50,\r\n                \"upperValueThreshold\": 100\r\n            }\r\n        ]\r\n    }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/v1/rules/625d283296d4c821807cf2be",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"rules",
+						"625d283296d4c821807cf2be"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Ruleset",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/v1/rules/625842168032777bab8ee3b0",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"rules",
+						"625842168032777bab8ee3b0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Failing request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"\",\r\n    \"isActive\": true,\r\n    \"rules\": [\r\n        {\r\n            \"name\": \"Value Lower and Upper Threshold Rule\",\r\n            \"lowerValueThreshold\": 25,\r\n            \"upperValueThreshold\": 70\r\n        }\r\n    ]   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/v1/rules",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"v1",
+						"rules"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
