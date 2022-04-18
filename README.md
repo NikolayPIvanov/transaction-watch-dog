@@ -79,6 +79,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
 
 ## System Design
 
+![System Design Schema](https://github.com/NikolayPIvanov/transaction-watch-dog/blob/main/transaction-watch-dog-schema.drawio.png)
 The system consists of three projects - API, Message Relay and Watchdog.
 The system is designed to be distributed and each component individually scalable.
 _NOTE:_ The Load balancer on the diagram is not part of the implementation. This is a holistic architecture design concept.
