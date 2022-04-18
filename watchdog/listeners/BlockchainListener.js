@@ -14,17 +14,32 @@ class BlockchainListener {
     this.ruleSet = activeRuleSet?._doc || activeRuleSet;
   }
 
-  onRuleSetAddUpdate = (ruleSet) => {
-    logger.info('On rule set add update evoked');
-    if (!ruleSet?.isActive) return;
-    // eslint-disable-next-line no-underscore-dangle
-    logger.info(`Changed active rule set to ${ruleSet._id}`);
-    this.ruleSet = ruleSet;
+  onRuleSetAdd = (rs) => {
+    logger.info('On rule set add.');
+    if (this.ruleSet.isActive) {
+      this.ruleSet = rs;
+      // eslint-disable-next-line no-underscore-dangle
+      logger.info(`Active rule set is set to ${this.ruleSet._id.toString()}.`);
+    }
+    logger.info('On rule set add.');
   };
 
-  onRuleSetDeleted = (ruleSet) => {
-    logger.info('On rule set delete evoked');
-    if (this.ruleSet.id !== ruleSet?.externalId) return;
+  onRuleSetUpdated = (rs) => {
+    logger.info('On rule set update.');
+    if (rs?.externalId === this.ruleSet.externalId) {
+      this.ruleSet = rs;
+      // eslint-disable-next-line no-underscore-dangle
+      logger.info(`Active rule set is set to ${this.ruleSet._id.toString()}.`);
+      if (!this.ruleSet.isActive) {
+        logger.info('Current rule set is deactivated.');
+        this.ruleSet = null;
+      }
+    }
+  };
+
+  onRuleSetDeleted = (rs) => {
+    logger.info('On rule set delete.');
+    if (this.ruleSet.externalId !== rs?.externalId) return;
     logger.info('Current active ruleset is deleted');
     this.ruleSet = null;
   };

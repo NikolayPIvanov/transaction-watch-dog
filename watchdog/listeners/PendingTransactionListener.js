@@ -25,7 +25,7 @@ class PendingTransactionListener extends BlockchainListener {
         logger.info('Skipping processing due to missing ruleset');
         return;
       }
-      const { ruleSet } = this.ruleSet;
+      const ruleSet = { ...this.ruleSet };
 
       const transaction = await this.web3.eth.getTransaction(txHash);
       if (!transaction) return;
@@ -34,21 +34,23 @@ class PendingTransactionListener extends BlockchainListener {
       const definedRules = matchedRules.filter((r) => r);
       if (definedRules.length === 0) return;
 
+      logger.info(`Tx: ${txHash} matched ${definedRules.length} rules.`);
+
       await Transaction.create({
         ...transaction,
         ruleSetId: ruleSet._id.toString(),
-        ruleId: definedRules[0].toString(),
+        ruleId: definedRules[0]._id.toString(),
       });
     } catch (err) {
       logger.error(err);
     }
   };
 
-  watch(rulingEngine) {
+  watch = (rulingEngine) => {
     this.subscription.on('data', async (txHash) => {
       await this.onTransaction(rulingEngine, txHash);
     });
-  }
+  };
 }
 
 module.exports = PendingTransactionListener;

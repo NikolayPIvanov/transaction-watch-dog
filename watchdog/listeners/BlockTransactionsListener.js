@@ -29,7 +29,9 @@ class BlockTransactionsListener extends Listener {
   getBlocksTransactions = async (blockNumbers) => {
     const blockRequests = blockNumbers.map((num) => this.web3.eth.getBlock(num, true));
     const blocks = await Promise.all(blockRequests);
-    const transactions = blocks.flatMap((b) => b.transactions);
+    const transactions = blocks
+      .flatMap((b) => b?.transactions)
+      .filter((tx) => tx);
     logger.info(`Collected ${transactions.length}`);
     return transactions;
   };
@@ -61,6 +63,11 @@ class BlockTransactionsListener extends Listener {
 
   // https://web3js.readthedocs.io/en/v1.2.11/web3-eth.html#getblock
   queryNetwork = async (rulingEngine, maxBlockBatch = 50) => {
+    logger.info('Starting network query iteration.');
+    if (!this.ruleSet) {
+      logger.warn('No active ruleset. Ending iteration.');
+      return;
+    }
     const { local, remote, blockLocalId } = await this.getLocalAndRemoteBlockNumbers();
     if (local === remote) return;
 
@@ -79,6 +86,7 @@ class BlockTransactionsListener extends Listener {
 
     const rangeLatest = blockNumbers[blockNumbers.length - 1];
     await this.updateBlockNumber(local, rangeLatest, blockLocalId);
+    logger.info('Ending network query iteration.');
   };
 
   watch = (rulingEngine) => {

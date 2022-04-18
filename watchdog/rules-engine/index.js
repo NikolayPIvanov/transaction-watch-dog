@@ -33,8 +33,8 @@ const start = async () => {
   const networkWatcher = config.mode === 'block' ? new BlockTransactionsListener(config.infuraId, activeRuleSet)
     : new TransactionListener(config.infuraId, activeRuleSet);
 
-  await messageListener.add(broker, networkWatcher.onRuleSetAddUpdate);
-  await messageListener.update(broker, networkWatcher.onRuleSetAddUpdate);
+  await messageListener.add(broker, networkWatcher.onRuleSetAdd);
+  await messageListener.update(broker, networkWatcher.onRuleSetUpdated);
   await messageListener.delete(broker, networkWatcher.onRuleSetDeleted);
 
   networkWatcher.watch(rulesEngine);

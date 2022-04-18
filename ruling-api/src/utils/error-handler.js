@@ -1,25 +1,26 @@
-const { httpStatus } = require('./errors');
+const { httpCodes, ApiError } = require('./errors');
 const { serverConfig } = require('../../config');
-const ApiError = require('./errors/api-error');
 
 const errorConverter = (errorResult) => {
-  if (errorResult?.error && errorResult.error.isJoi) {
+  // Joi (validation) error
+  if (errorResult?.error && errorResult?.error?.isJoi) {
     const details = {
       type: errorResult.type,
       validations: errorResult.error.details.map((d) => d.message.replaceAll('"', "'")),
     };
     return {
-      ...errorResult.error,
-      error: new ApiError('Validation error', httpStatus.BAD_REQUEST, 'A validation error has occurred', true, details),
+      known: true,
+      error: new ApiError('Validation error', httpCodes.BAD_REQUEST, 'A validation error has occurred', true, details),
     };
   }
 
+  // Different from Api Error
   if (!(errorResult.error instanceof ApiError)) {
     const statusCode = errorResult.error.statusCode
-      ? httpStatus.BAD_REQUEST : httpStatus.INTERNAL_SERVER_ERROR;
+      ? httpCodes.BAD_REQUEST : httpCodes.INTERNAL_SERVER_ERROR;
     const message = errorResult.message || 'Unspecifed';
     return {
-      ...errorResult.error,
+      known: true,
       error: new ApiError('Generic error', statusCode, message, true, null, errorResult.error.stack),
     };
   }
@@ -44,7 +45,7 @@ const responseErrorHandler = (err, res) => {
 };
 
 const crashIfUntrustedErrorOrSendResponse = (error, responseStream) => {
-  const errorResult = errorConverter({ known: true, error });
+  const errorResult = errorConverter({ known: true, error: error?.error || error });
   // For now all of the errors will be known
   if (errorResult.known) {
     responseErrorHandler(errorResult.error, responseStream);
@@ -53,7 +54,8 @@ const crashIfUntrustedErrorOrSendResponse = (error, responseStream) => {
 
 class GlobalErrorHandler {
   constructor() {
-    this.handleError = async (error, request, responseStream) => {
+    // eslint-disable-next-line no-unused-vars
+    this.handleError = async (error, request, responseStream, next) => {
       crashIfUntrustedErrorOrSendResponse(error, responseStream);
     };
   }

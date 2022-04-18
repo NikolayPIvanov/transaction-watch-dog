@@ -38,7 +38,7 @@ const addRulesetListener = async (broker, action) => {
   const topic = 'addRuleSet';
   const handler = async (message, content, ackOrNack) => {
     const ruleSetCreate = parseContent(content);
-    logger.log(`Adding new ruleset: ${content}`);
+    logger.info(`Adding new ruleset: ${content}`);
     const ruleSet = await RuleSet.create({ ...ruleSetCreate });
     action(ruleSet);
     ackOrNack();
@@ -72,7 +72,7 @@ const deleteRulesetListener = async (broker, cb) => {
   const topic = 'deleteRuleSet';
   const handler = async (message, content, ackOrNack) => {
     const ruleSetDelete = parseContent(content);
-    logger.info(`Deleting ruleset: ${ruleSetDelete}`);
+    logger.info(`Deleting ruleset: ${JSON.stringify(ruleSetDelete)}`);
     const ruleSet = await RuleSet.findOneAndDelete({ externalId: ruleSetDelete.externalId });
     cb(ruleSet);
     ackOrNack();

@@ -15,7 +15,7 @@ const ruleSchema = Joi.object({
   upperGasThreshold: Joi.number(),
   input: Joi.string(),
   status: Joi.bool(),
-});
+}).unknown(false); // Left out to simulate inner collection error validation
 
 const createRuleSetSchema = {
   body: Joi.object({
@@ -25,7 +25,7 @@ const createRuleSetSchema = {
       .required(),
     isActive: Joi.bool().required(),
     rules: Joi.array().items(ruleSchema),
-  }).unknown(true),
+  }),
 };
 
 const getRuleSetSchema = {
@@ -37,7 +37,7 @@ const getRuleSetSchema = {
         }
         return value;
       }),
-  }).unknown(true),
+  }),
 };
 
 const updateRuleSetSchema = {
@@ -50,7 +50,7 @@ const updateRuleSetSchema = {
         }
         return value;
       }),
-  }).unknown(true),
+  }),
   body: Joi.object({
     name: Joi.string()
       .min(3)
@@ -58,7 +58,7 @@ const updateRuleSetSchema = {
       .required(),
     isActive: Joi.bool().required(),
     rules: Joi.array().items(ruleSchema),
-  }).unknown(true),
+  }),
 };
 
 const deleteRuleSetSchema = {
@@ -72,7 +72,7 @@ const deleteRuleSetSchema = {
         }
         return value;
       }),
-  }).unknown(true),
+  }),
 };
 
 module.exports = {

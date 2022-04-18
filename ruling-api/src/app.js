@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
-
+const { globalErrorHandler } = require('./utils');
 const routes = require('./routes');
 
 const { logger, successHandler: successLog, errorHandler: errorLog } = require('./log');
@@ -18,6 +18,8 @@ app.use(successLog);
 app.use(errorLog);
 
 app.use('/api', routes);
+
+app.use(globalErrorHandler.handleError);
 
 const listen = async (port) => {
   app.listen(port, () => {
