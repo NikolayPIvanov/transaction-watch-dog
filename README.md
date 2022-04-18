@@ -15,6 +15,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
 2. Clone the repository
 3. (_Optional_) If you have Docker you can run `docker-compose up` in root of the repository. This will create the infrastructure dependencies.
    1. I strongly recommend using [Atlas MongoDB](https://www.mongodb.com/atlas/database) for fast setup.
+   2. The system has been tested with mongo uri for Atlast cluster in the following format: `mongodb+srv://<user>:<password>@cluster0.6bodt.mongodb.net/<database>?retryWrites=true&w=majority`
 4. API
    1. Navigate to `ruling-api` folder
    2. Open a terminal and write `npm i`
