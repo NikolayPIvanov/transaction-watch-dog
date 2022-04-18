@@ -64,8 +64,8 @@ class BlockTransactionsListener extends Listener {
   // https://web3js.readthedocs.io/en/v1.2.11/web3-eth.html#getblock
   queryNetwork = async (rulingEngine, maxBlockBatch = 50) => {
     logger.info('Starting network query iteration.');
-    if (!this.ruleSet) {
-      logger.warn('No active ruleset. Ending iteration.');
+    if (!this.ruleSet || !this.ruleSet.rules || this.ruleSet.rules.length === 0) {
+      logger.warn('No active ruleset and rules. Ending iteration.');
       return;
     }
     const { local, remote, blockLocalId } = await this.getLocalAndRemoteBlockNumbers();

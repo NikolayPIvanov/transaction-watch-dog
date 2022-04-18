@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-const RuleSet = require('./ruleset-model');
+const RuleSet = require('./ruleset');
 const Message = require('./message');
 const { ApiError, httpStatusCodes } = require('../../utils/errors');
 const messageAction = require('./message-actions');

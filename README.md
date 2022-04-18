@@ -89,9 +89,9 @@ _NOTE:_ The Watchdog cannot be scaled horizontally due to the nature of the bloc
 The flow is as follow:
 
 1. The client sends CRUD requests to the instance(s) of the API.
-2. The API stores the data changes locally and stores a message records that tracks what changes were done. The message body includes field names `externalId` which is the `id` of the document in the current system. This can be replaced by uniquely generated correlation id if we are going to share the document changes across many systems.
+2. The API stores the data changes in local Mongo database and stores a message records that tracks what changes were done. The message body includes field names `externalId` which is the `id` of the document in the current system. This can be replaced by uniquely generated correlation id if we are going to share the document changes across many systems.
 3. The message relay is running on a given schedule picking up all unread and unsent messages from the message collection. Once picked up they are sent to the corresponding queues in the Message Broker depending on the action in the message's body.
-4. The Watchdog is listening for events on all of the queues and is updating the currently active rule set on the instance. This way we can 'hot load' the new rule set on all instances. Meanwhile the watchdog is running a blockchain listener that is query the Ethereum network or listening for pending transactions (depends on the `mode` of the instance)
+4. The Watchdog is listening for events on all of the queues and is updating the currently active rule set on the instance both in-memory and in the database. This way we can 'hot load' the new rule set on all instances and not query the database. Meanwhile the watchdog is running a blockchain listener that is query the Ethereum network or listening for pending transactions (depends on the `mode` of the instance).
 
 ### Why such a hassle and so many components?
 
@@ -158,10 +158,281 @@ ESLint is implemented using the 'airbnb-base' coding style.
 
 ```
 config\
- |--relay.js       # Configuration file for extracting environment variables
- |--index.js       # Single place export of functionality
-relay\
- |--index.js           # Single place export of functionality
- |--message.js         # Message database model
- |--message-relay.js   # Logic to extract and sent messages
+ |--watchdog.js       # Configuration file for extracting environment variables
+ |--index.js          # Single place export of functionality
+listeners\
+ |--BlockchainListener.js           # Base listener class for encapsulating logic
+ |--BlockTransactionsListener.js    # Listening to mined blocks and their transactions (pooling)
+ |--message-listener.js             # Listening to message broker events
+ |--PendingTransactionsListener.js  # Listening to pending transactions on the blockchain (listening for events)
+ |--index.js                        # Single place export of functionality
+models\
+ |--block.js                        # Model for keeping last block number
+ |--index.js                        # Single place export of functionality
+ |--ruleset.js                      # Model for rule set
+ |--transaction.js                  # Model for transaction
+rules-engine\
+ |--engine.js                       # Functionality for filtering transaction
+ |--index.js                        # Single place export of functionality
+index.js                            # Start of the watchdog
 ```
+
+### Shared Project Code Structure and Style
+
+ESLint is implemented using the 'airbnb-base' coding style.
+
+```
+config\                 # Holds shared rabbit mq publisher/subscription configuration
+broker\                 # Holds logic to create RabbitMQ message brokers
+logging\                # Holds shared logic for logging
+models\                 # Holds database models schemas that are reused from different bounded contexts
+```
+
+## API functionality
+
+The API holds configurations called rulesets. Rulesets are the core of the API. There can be only one active ruleset at a time. The API has validation for that. If we want to change the currently active ruleset we can update the currently active to no inactive and then set the new as active.
+
+Rules number is not restricted. When we get at transaction will look if the transaction is matching any of the rules of the currently active ruleset.
+
+Rulesets have the following structure
+
+```
+    name: String/required,
+    isActive: Boolean/required,
+    rules: [
+        {
+          name: String/required,
+
+          // From / To Address
+          from: String/optional,
+          to: String/optional,
+
+          // Value in ether
+          lowerValueThreshold: Number/optional,
+          upperValueThreshold: Number/optional,
+
+          // Gas Price in ether
+          lowerGasThreshold: Number/optional,
+          upperGasThreshold: Number/optional,
+
+          // Input
+          input: String/optional,
+
+          // Status
+          status: Boolean/optional
+        }
+      ]
+```
+
+#### Create Ruleset
+
+`Endpoint`: <host>/api/v1/rules
+`Method`: `POST`
+`Body`:
+
+```
+{
+    "name": "Standard Ruleset for Value",
+    "isActive": true,
+    "rules": [
+        {
+            "name": "Value Lower and Upper Threshold Rule",
+            "lowerValueThreshold": 25,
+            "upperValueThreshold": 70
+        }
+    ]
+}
+```
+
+`Response`
+
+```
+Status: 201 CREATED
+{
+    "id": "625d283296d4c821807cf2be"
+}
+```
+
+#### Update Ruleset
+
+`Endpoint`: <host>/api/v1/rules/:id
+`Method`: `PUT`
+`Body`:
+
+```
+{
+    "name": "Standard Ruleset for Value Updated",
+    "isActive": true,
+    "rules": [
+        {
+            "name": "Value Lower and Upper Threshold Rule",
+            "lowerValueThreshold": 25,
+            "upperValueThreshold": 50
+        }
+    ]
+}
+```
+
+`Response` :
+
+```
+204 NO CONTENT
+```
+
+#### Delete Ruleset
+
+`Endpoint`: <host>/api/v1/rules/:id
+`Method`: `DELETE`
+`Body`: none
+`Response` :
+
+```
+204 NO CONTENT
+```
+
+#### GET Ruleset
+
+`Endpoint`: <host>/api/v1/rules/:id
+`Method`: `GET`
+`Body`: none
+`Response` :
+
+```
+200 OK
+{
+    "_id": "625d280ed0b5f1005c107a81",
+    "name": "Standard Ruleset for Value",
+    "isActive": false,
+    "rules": [
+        {
+            "name": "Value Lower Threshold",
+            "lowerValueThreshold": 25,
+            "upperValueThreshold": 70,
+            "_id": "625d280ed0b5f1005c107a82"
+        }
+    ],
+    "__v": 0
+},
+```
+
+#### Get Rulesets
+
+`Endpoint`: <host>/api/v1/rules
+`Method`: `GET`
+`Body`: none
+`Response` :
+
+```
+200 OK
+[
+    {
+        "_id": "625d280ed0b5f1005c107a81",
+        "name": "Standard Ruleset for Value",
+        "isActive": false,
+        "rules": [
+            {
+                "name": "Value Lower Threshold",
+                "lowerValueThreshold": 25,
+                "upperValueThreshold": 70,
+                "_id": "625d280ed0b5f1005c107a82"
+            }
+        ],
+        "__v": 0
+    },
+    ...
+]
+```
+
+#### Error Response
+
+This is returned on internal error due to infrastructure e.g database, broker and this format is also returned on validation error due to the central error handling piece
+`Endpoint`: <host>/api/v1/rules
+`Method`: `POST`
+`Body`:
+
+```
+{
+    "name": "",
+    "isActive": true,
+    "rules": [
+        {
+            "name": "Value Lower and Upper Threshold Rule",
+            "lowerValueThreshold": 25,
+            "upperValueThreshold": 70
+        }
+    ]
+}
+```
+
+`Response`
+
+```
+Status: 400 BAD REQUEST
+{
+    "message": "Validation error",
+    "code": 400,
+    "description": "A validation error has occurred",
+    "details": {
+        "validations": [
+            "'name' is not allowed to be empty"
+        ]
+    }
+}
+```
+
+## Watchdog
+
+The watchdog's main purpose is to watch the transactions on the Ethereum network and store the ones that are fitting our ruleset's rules. There are two modes of working with the Watchdog - `block` and `pendingTransactions`.
+
+The `block` mode is querying the Ethereum blockchain blocks and their transactions. Running the through the ruling engine that we have by passing the transaction and the currently active rules (active ruleset). The query is running every 10 seconds and only one active execution can be happening at a time. If the execution has taken more than 1 second e.g 5 seconds the next execution takes place 5 seconds later (10 seconds delay - 5 seconds previous execution) = 5 seconds until next run and vice versa - if the query took more than 10 seconds, we schedule another query immediately.
+
+The `pendingTransactions` mode is listening for `pendingTransaction` events via Web Sockets. Upon event we query the transaction data via HTTP and then pass it to the ruling engine.
+
+Both modes share common class `BlockchainListener` which encapsulates ruleset change functionality.
+
+Alongside with this, the watchdog has functionality to listen to changes in the rulesets that are coming the form of events from the message broker. Each event performs CUD operation on the local copies of the rulesets in the watchdog's own database. This is known as _eventual consistency_. Once the change is stored to the database and once it is successfully stored we update it on the watchdog instance in memory.
+
+Ruling engine holds the way we treat rules. Currently it is a function and it is injected via parameter to the listeners. This allows us to use the listeners with any kind of ruling engine we might create, decoupling the decision from the data gathering.
+
+#### Scaling the Watchdog
+
+Scaling the Watchdog is tricky due to the nature of the way we listen for transactions and they way they are propagated to us. The only effective way to scale it that I can think of is to have a unique filter on each instance of the watchdog e.g filter by gas price, filter by amount, by hash/number and so on.
+
+## Libraries used
+
+### Database
+
+- Mongoose - connection to MongoDB cluster
+
+### Message Broker
+
+- Rascal - configuration and functionality to RabbitMQ
+
+### Logging
+
+- Winston - General Logging
+- Morgan - HTTP Logging
+
+### Scheduling
+
+- Cron
+
+### Ethereum Blockchain
+
+- Web3
+
+### Linting
+
+- ESLint
+
+### Configuration
+
+- dotenv
+
+### Server
+
+- Express
+- Cors
+- Helmet
+- Joi
+- Compression
