@@ -21,7 +21,7 @@ class PendingTransactionListener extends BlockchainListener {
 
   onTransaction = async (rulingEngine, txHash) => {
     try {
-      const ruleSet = { ...this.state.ruleSet };
+      const ruleSet = { ...this.state.getRuleSet() };
       if (!ruleSet || !ruleSet.rules || ruleSet.rules.length === 0) {
         logger.warn('No active ruleset and rules. Ending iteration.');
         return;
