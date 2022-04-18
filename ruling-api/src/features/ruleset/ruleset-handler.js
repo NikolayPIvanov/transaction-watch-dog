@@ -1,10 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 const RuleSet = require('./ruleset-model');
 const Message = require('./message');
-const ApiError = require('../../utils/api-error');
+const { ApiError, httpStatusCodes } = require('../../utils/errors');
 const messageAction = require('./message-actions');
 const logger = require('../../../../shared/logging');
-const httpStatusCodes = require('../../utils/http-codes');
 
 const createMessageBody = (ruleSet) => ({
   name: ruleSet.name,
@@ -15,13 +14,13 @@ const createMessageBody = (ruleSet) => ({
 
 const sendMessage = async (action, ruleSet) => {
   const messageData = { command: action, body: createMessageBody(ruleSet) };
-  logger.info(JSON.stringify(messageData));
   await Message.create({
     ts: Date.now(),
     data: JSON.stringify(messageData),
     read: false,
     sent: false,
   });
+  logger.info(`${action} message created.`);
 };
 
 exports.getRuleSets = async (req, res, next) => {
