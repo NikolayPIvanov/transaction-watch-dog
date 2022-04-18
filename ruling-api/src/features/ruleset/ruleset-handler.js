@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const RuleSet = require('./ruleset');
 const Message = require('./message');
-const { ApiError, httpStatusCodes } = require('../../utils/errors');
+const { ApiError, httpCodes } = require('../../utils/errors');
 const messageAction = require('./message-actions');
 const logger = require('../../../../shared/logging');
 
@@ -50,7 +50,7 @@ exports.createRuleSet = async (req, res, next) => {
     if (req.body.isActive) {
       const existingActive = await RuleSet.exists({ isActive: true });
       if (existingActive) {
-        throw new ApiError('An active ruleset is already set', httpStatusCodes.BAD_REQUEST, 'Invalid request');
+        throw new ApiError('An active ruleset is already set', httpCodes.BAD_REQUEST, 'Invalid request');
       }
     }
 
@@ -70,7 +70,7 @@ exports.updateRuleSet = async (req, res, next) => {
     if (update.isActive) {
       const active = await RuleSet.findOne({ isActive: true }, '_id');
       if (active && active.id !== id) {
-        throw new ApiError('An active ruleset is already set', httpStatusCodes.BAD_REQUEST, 'Invalid request');
+        throw new ApiError('An active ruleset is already set', httpCodes.BAD_REQUEST, 'Invalid request');
       }
     }
 

@@ -1,5 +1,4 @@
 const { httpCodes, ApiError } = require('./errors');
-const { serverConfig } = require('../../config');
 
 const errorConverter = (errorResult) => {
   // Joi (validation) error
@@ -38,7 +37,6 @@ const responseErrorHandler = (err, res) => {
     code: statusCode,
     description: message,
     details,
-    ...(serverConfig.env === 'development' && { stack: err.stack }),
   };
 
   res.status(statusCode).send(response);
