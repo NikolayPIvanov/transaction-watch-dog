@@ -17,7 +17,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
 4. API
    1. Navigate to `ruling-api` folder
    2. Open a terminal and write `npm i`
-   3. Create `.env` file with the following envrionment variables
+   3. Create `.env` file with the following environment variables
       ```
         PORT=<port on which the API will run>
         MONGODB_URI=<MongoDB connection string for API database>
@@ -32,7 +32,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
 
    1. Navigate to `message-relay` folder
    2. Open a terminal and write `npm i`
-   3. Create `.env` file with the following envrionment variables
+   3. Create `.env` file with the following environment variables
       ```
         CRON_EXPRESSION=<at what interval the message relay will look for messages to publish>
         MONGODB_URI=<MongoDB connection string for API database>
@@ -55,7 +55,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
 6. Watchdog
    1. Navigate to `watchdog` folder
    2. Open a terminal and write `npm i`
-   3. Create `.env` file with the following envrionment variables
+   3. Create `.env` file with the following environment variables
       ```
         INFURA_PROJECTID=<Infura project id>
         MONGODB_URI=<MongoDB connection string for different database from the API>
@@ -86,11 +86,16 @@ _NOTE:_ The Load balancer on the diagram is not part of the implementation. This
 _NOTE:_ The message locking is not part of the implementation. Locking is needed to prevent duplicate events being published.
 _NOTE:_ The Watchdog cannot be scaled horizontally due to the nature of the blockchain messages. If we want scaling we can implement global filter for each instance of the watchdog e.g filter by gas price on Watchdog instance level.
 
-The flow is as follow: 1. The client sends CRUD requests to the instance(s) of the API. 2. The API stores the data changes locally and stores a message records that tracks what changes were done. The message body includes field names `externalId` which is the `id` of the document in the current system. This can be replaced by uniquely generated correlation id if we are going to share the document changes across many systems. 3. The message relay is running on a given schedule picking up all unread and unsent messages from the message collection. Once picked up they are sent to the corresponding queues in the Message Broker depending on the action in the message's body. 4. The Watchdog is listening for events on all of the queues and is updating the currently active rule set on the instance. This way we can 'hot load' the new rule set on all instances. Meanwhile the watchdog is running a blockchain listener that is query the Ethereum network or listening for pending transactions (depends on the `mode` of the instnace)
+The flow is as follow:
+
+1. The client sends CRUD requests to the instance(s) of the API.
+2. The API stores the data changes locally and stores a message records that tracks what changes were done. The message body includes field names `externalId` which is the `id` of the document in the current system. This can be replaced by uniquely generated correlation id if we are going to share the document changes across many systems.
+3. The message relay is running on a given schedule picking up all unread and unsent messages from the message collection. Once picked up they are sent to the corresponding queues in the Message Broker depending on the action in the message's body.
+4. The Watchdog is listening for events on all of the queues and is updating the currently active rule set on the instance. This way we can 'hot load' the new rule set on all instances. Meanwhile the watchdog is running a blockchain listener that is query the Ethereum network or listening for pending transactions (depends on the `mode` of the instance)
 
 ### Why such a hassle and so many components?
 
-I view these requirements to be addressing a distirbuted system so I designed the system with that in mind. The [Outbox Pattern](https://microservices.io/patterns/data/transactional-outbox.html) is something that is quite overlooked in distributed system and thus they tend to lose messages. If the requirements of this system are for a product running millions of dollars we do not want rule sets being lost due to network, connectivity or other issues. Even though this solution does not provide locking for horizontal scaling that is kept in mind with the design.
+I view these requirements to be addressing a distributed system so I designed the system with that in mind. The [Outbox Pattern](https://microservices.io/patterns/data/transactional-outbox.html) is something that is quite overlooked in distributed system and thus they tend to lose messages. If the requirements of this system are for a product running millions of dollars we do not want rule sets being lost due to network, connectivity or other issues. Even though this solution does not provide locking for horizontal scaling that is kept in mind with the design.
 
 ### Ruling API Code Structure and style
 
@@ -100,7 +105,7 @@ ESLint is implemented using the 'airbnb-base' coding style.
 
 ```
 config\
- |--database.js    # Logic related to connetcting to the MongoDB and creating a connection pool
+ |--database.js    # Logic related to connecting to the MongoDB and creating a connection pool
  |--server.js      # Configuration file for extracting environment variables
  |--index.js       # Single place export of functionality
 src\
