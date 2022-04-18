@@ -16,7 +16,10 @@ For detailed requirements check transaction-watch-dog.md file in this repository
 3. (_Optional_) If you have Docker you can run `docker-compose up` in root of the repository. This will create the infrastructure dependencies.
    1. I strongly recommend using [Atlas MongoDB](https://www.mongodb.com/atlas/database) for fast setup.
    2. The system has been tested with mongo uri for Atlast cluster in the following format: `mongodb+srv://<user>:<password>@cluster0.6bodt.mongodb.net/<database>?retryWrites=true&w=majority`
-4. API
+4. Shared
+   1. Navigate to `shared`
+   2. Open a terminal and write `npm i`   
+5. API
    1. Navigate to `ruling-api` folder
    2. Open a terminal and write `npm i`
    3. Create `.env` file with the following environment variables
@@ -30,7 +33,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
       Default value for `ENV` is `production`. Possible values are `production` and `development`
    4. Open a terminal and write `npm start`
    5. Logs should indicate that the API is running on the specified port.
-5. Message Relay
+6. Message Relay
 
    1. Navigate to `message-relay` folder
    2. Open a terminal and write `npm i`
@@ -54,7 +57,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
    4. Open a terminal and write `npm start`
    5. Logs should indicate that the relay is running.
 
-6. Watchdog
+7. Watchdog
    1. Navigate to `watchdog` folder
    2. Open a terminal and write `npm i`
    3. Create `.env` file with the following environment variables
@@ -78,6 +81,7 @@ For detailed requirements check transaction-watch-dog.md file in this repository
       Default value for `MODE` is `block`. Possible values are `block` for block mode and _any_ other string for `pending transactions` mode.
    4. Open a terminal and write `npm start`
    5. Logs should indicate that the watchdog is running.
+8. You can start creating rule sets
 
 ## System Design
 
