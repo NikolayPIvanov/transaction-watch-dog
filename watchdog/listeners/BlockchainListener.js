@@ -21,12 +21,11 @@ class BlockchainListener {
 
   onRuleSetUpdated = (rs) => {
     logger.info('On rule set update.');
-    const ruleSet = this.state.getRuleSet();
-    if (ruleSet?.externalId === rs?.externalId) {
+    const currentRuleSet = this.state.getRuleSet();
+    if (currentRuleSet?.externalId === rs?.externalId || rs?.isActive) {
       this.state.setRuleSet(rs);
-      // eslint-disable-next-line no-underscore-dangle
-      logger.info('Active rule was updated.');
-      if (!ruleSet.isActive) {
+      logger.info(`Active rule set is set to ${JSON.stringify(rs)}.`);
+      if (!rs?.isActive) {
         logger.info('Current rule set is deactivated.');
         this.state.setRuleSet(null);
       }
