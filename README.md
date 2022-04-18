@@ -130,3 +130,33 @@ src\
  |--app.js          # Server construction
  |--index.js        # Entry point
 ```
+
+### Message Relay Code Structure and Style
+
+The style is resolved around single entry point for creating the CRON job and starting the message relay.
+ESLint is implemented using the 'airbnb-base' coding style.
+
+```
+config\
+ |--relay.js       # Configuration file for extracting environment variables
+ |--index.js       # Single place export of functionality
+relay\
+ |--index.js           # Single place export of functionality
+ |--message.js         # Message database model
+ |--message-relay.js   # Logic to extract and sent messages
+```
+
+### Watchdog Code Structure and Style
+
+The style is resolved around single entry point for creating listener for storing transactions.
+ESLint is implemented using the 'airbnb-base' coding style.
+
+```
+config\
+ |--relay.js       # Configuration file for extracting environment variables
+ |--index.js       # Single place export of functionality
+relay\
+ |--index.js           # Single place export of functionality
+ |--message.js         # Message database model
+ |--message-relay.js   # Logic to extract and sent messages
+```
