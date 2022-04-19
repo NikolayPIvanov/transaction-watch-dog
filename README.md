@@ -230,6 +230,8 @@ Rulesets have the following structure
       ]
 ```
 
+*_NOTE_*: Properties that you wish not to include in the rules can be omitted in the request
+
 #### Create Ruleset
 
 `Endpoint`: <host>/api/v1/rules
