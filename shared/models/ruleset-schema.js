@@ -34,6 +34,13 @@ ruleSetSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
+ruleSetSchema.index({ isActive: 1 }, {
+  unique: true,
+  partialFilterExpression: {
+    'isActive': { $exists: true, $eq: true }
+  }
+})
+
 module.exports = {
   ruleSetSchema
 }
