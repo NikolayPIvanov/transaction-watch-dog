@@ -406,6 +406,12 @@ Ruling engine holds the way we treat rules. Currently it is a function and it is
 
 Scaling the Watchdog is tricky due to the nature of the way we listen for transactions and they way they are propagated to us. The only effective way to scale it that I can think of is to have a unique filter on each instance of the watchdog e.g filter by gas price, filter by amount, by hash/number and so on.
 
+## What's left to be done (future work)
+- Extract database models and persistance into a database layer / repositories to abstract away the used database
+- For fans of the typical N-layer architecture separation into layers is possible
+- Separate Logical Handlers
+- Locking on Message Relay
+- TLS support
 ## Libraries used
 
 ### Database
