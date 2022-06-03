@@ -1,0 +1,42 @@
+{
+  "name": "ruling-api",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Ruling API that manipulates configurations for filtering Ethereum Blockchain transactions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "lint": "./node_modules/.bin/eslint"
+  },
+  "author": "Nikolay Ivanov",
+  "license": "ISC",
+  "dependencies": {
+    "awilix": "^7.0.2",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "cron": "^1.8.2",
+    "dotenv": "^16.0.1",
+    "express": "^4.17.3",
+    "express-joi-validation": "^5.0.1",
+    "express-winston": "^4.2.0",
+    "getenv": "^1.0.0",
+    "helmet": "^5.0.2",
+    "invariant": "^2.2.4",
+    "joi": "^17.6.0",
+    "mongoose": "^6.2.11",
+    "morgan": "^1.10.0",
+    "morgan-json": "^1.1.0",
+    "node-cron": "^3.0.0",
+    "node-schedule": "^2.1.0",
+    "nodemon": "^2.0.15",
+    "pino": "^8.0.0",
+    "winston": "^3.7.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.13.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.26.0"
+  }
+}
