@@ -11,7 +11,7 @@ const logError = () => (error, req, res, next) => {
   return next(error);
 };
 
-const handleError = () => (error, req, res) => {
+const handleError = () => (error, req, res, next) => {
   const code = error.code && error.code > 99 && error.code < 600 ? error.code : 500;
 
   const message = error.message || 'Internal Server Error';

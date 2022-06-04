@@ -11,12 +11,6 @@ const Log = pino({
   level: string('LOG_LEVEL'),
   serializers: pino.stdSerializers,
   redact: ['password', '*.password'],
-  // prettyPrint:
-  //   string('NODE_ENV', '') === 'production'
-  //     ? undefined
-  //     : {
-  //       levelFirst: true,
-  //     },
 });
 
 export default Log;

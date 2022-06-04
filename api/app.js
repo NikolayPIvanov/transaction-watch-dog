@@ -19,6 +19,6 @@ process.on('uncaughtException', cleanup('Uncaught Exception'));
 process.on('unhandledRejection', cleanup('Unhandled Rejection'));
 
 const port = int('PORT')
-server.start(port, () => {
+server.start(port, async () => {
   Log.info(`Starting server on ${port}`)
 });
