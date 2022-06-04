@@ -1,5 +1,7 @@
 import express from 'express';
 import invariant from 'invariant';
+import preware from './preware.js';
+import postware from './postware.js';
 
 export default class Server {
   #app;
@@ -9,7 +11,15 @@ export default class Server {
   constructor({ routes }) {
     this.#app = express();
 
+    for (const middleware of preware) {
+      this.#app.use(middleware());
+    }
+
     this.#app.use(routes);
+
+    for (const middleware of postware) {
+      this.#app.use(middleware());
+    }
   }
 
   start(port, cb) {

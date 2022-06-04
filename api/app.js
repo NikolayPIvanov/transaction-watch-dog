@@ -1,16 +1,10 @@
-import pkg from 'dotenv';
-
 import Server from './server/index.js';
 import Routes from './routes/index.js';
 import Log from './infrastructure/log/index.js';
 
-const { config } = pkg;
+import pkg from 'getenv';
 
-const confg = config({
-  path: '.env',
-});
-
-console.log(confg)
+const { int } = pkg
 
 const server = new Server({ routes: Routes });
 
@@ -24,4 +18,7 @@ const cleanup = (type) => (err) => {
 process.on('uncaughtException', cleanup('Uncaught Exception'));
 process.on('unhandledRejection', cleanup('Unhandled Rejection'));
 
-server.start(3001, () => { });
+const port = int('PORT')
+server.start(port, () => {
+  Log.info(`Starting server on ${port}`)
+});
