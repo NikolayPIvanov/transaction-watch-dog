@@ -12,7 +12,7 @@ const authenticate = async (sequelize) => {
 const sequelize = new Sequelize('sqlite::memory:')
 await authenticate(sequelize);
 
-const RuleSetSchema = sequelize.define('Rulesets', {
+const RuleSetSchema = sequelize.define('Ruleset', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -52,6 +52,29 @@ const RuleSetSchema = sequelize.define('Rulesets', {
   },
 });
 
+const EventSchema = sequelize.define('Event', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  body: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  read: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  }
+});
+
 await sequelize.sync({ force: true });
 
-export { RuleSetSchema }
+export { EventSchema, RuleSetSchema }
+
+// Multiple instances of the message relay - N
+// M records that need to be read and sent - M
+
+// How can we make such as that no copies of M are processed by N
+// e.g from 10 messages, 5 go to relay 1 and 5 to relay 2
